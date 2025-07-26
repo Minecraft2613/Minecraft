@@ -1,4 +1,4 @@
-        let currentUser = null;
+let currentUser = null;
         let userProfile = null;
 
         const simulatedCloudflareApi = {
@@ -7,8 +7,8 @@
                     const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/account/login`, {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'X-Auth-Token': WORKER_API_KEY
+                            'Content-Type': 'application/json'
+                            // Removed X-Auth-Token header
                         },
                         body: JSON.stringify({ email, password })
                     });
@@ -30,8 +30,8 @@
                     const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/account/create`, {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'X-Auth-Token': WORKER_API_KEY
+                            'Content-Type': 'application/json'
+                            // Removed X-Auth-Token header
                         },
                         body: JSON.stringify({ email, password, minecraftUsername, accountName, minecraftEdition })
                     });
@@ -53,8 +53,8 @@
                     const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/account/update-profile`, {
                         method: 'PUT',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'X-Auth-Token': WORKER_API_KEY
+                            'Content-Type': 'application/json'
+                            // Removed X-Auth-Token header
                         },
                         body: JSON.stringify({ email, newProfileData })
                     });
@@ -76,8 +76,8 @@
                     const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/account/change-password`, {
                         method: 'PUT',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'X-Auth-Token': WORKER_API_KEY
+                            'Content-Type': 'application/json'
+                            // Removed X-Auth-Token header
                         },
                         body: JSON.stringify({ email, currentPassword, newPassword })
                     });
@@ -112,8 +112,8 @@
                     const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/account/logout`, {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'X-Auth-Token': WORKER_API_KEY
+                            'Content-Type': 'application/json'
+                            // Removed X-Auth-Token header
                         },
                         body: JSON.stringify({ email: currentUser.email })
                     });

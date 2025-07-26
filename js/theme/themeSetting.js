@@ -88,8 +88,8 @@ async function saveTheme() {
         const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/theme.json`, {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json',
-                'X-Auth-Token': WORKER_API_KEY
+                'Content-Type': 'application/json'
+                // Removed X-Auth-Token header
             },
             body: JSON.stringify(themeData)
         });
@@ -125,8 +125,8 @@ async function resetTheme() {
         const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/theme.json`, {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json',
-                'X-Auth-Token': WORKER_API_KEY
+                'Content-Type': 'application/json'
+                // Removed X-Auth-Token header
             },
             body: JSON.stringify({ userId: currentUser ? currentUser.uid : 'guest', theme: defaults })
         });

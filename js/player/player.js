@@ -1,17 +1,11 @@
-async function fetchPlayersData() {
-            const allPlayersResponse = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/allPlayer.json`, {
-                headers: { 'X-Auth-Token': WORKER_API_KEY }
-            });
+        async function fetchPlayersData() {
+            const allPlayersResponse = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/allPlayer.json`); // Removed headers
             const allPlayers = allPlayersResponse.ok ? await allPlayersResponse.json() : [];
 
-            const topRichestResponse = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/topThreeRichest.json`, {
-                headers: { 'X-Auth-Token': WORKER_API_KEY }
-            });
+            const topRichestResponse = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/topThreeRichest.json`); // Removed headers
             const topRichest = topRichestResponse.ok ? await topRichestResponse.json() : [];
 
-            const topTaxedResponse = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/topThreeMostTax.json`, {
-                headers: { 'X-Auth-Token': WORKER_API_KEY }
-            });
+            const topTaxedResponse = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/topThreeMostTax.json`); // Removed headers
             const topTaxed = topTaxedResponse.ok ? await topTaxedResponse.json() : [];
 
             return { allPlayers, topRichest, topTaxed };

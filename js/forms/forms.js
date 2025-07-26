@@ -21,8 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/contact`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
-                    "X-Auth-Token": WORKER_API_KEY
+                    'Content-Type': 'application/json'
+                    // Removed X-Auth-Token header
                 },
                 body: JSON.stringify({
                     username: minecraftUsername,

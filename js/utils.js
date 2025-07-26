@@ -1,6 +1,7 @@
-        // --- Global Configuration ---
+// --- Global Configuration ---
         const CLOUDFLARE_WORKER_BASE_URL = 'https://minecraft1.1987sakshamsingh.workers.dev';
-        const WORKER_API_KEY = 'd47b4af7-2b66-4e82-b9ac-1dce11b3872b';
+        // WORKER_API_KEY is no longer used for authentication in this version
+        // const WORKER_API_KEY = 'd47b4af7-2b66-4e82-b9ac-1dce11b3872b';
 
         // --- Custom Message Box (Replaces alert()) ---
         const messageBoxOverlay = document.getElementById('message-box-overlay');
@@ -146,11 +147,7 @@
         // --- JSON File Read/Write Functions (via Cloudflare Worker) ---
         async function readJsonFile(filePath) {
             try {
-                const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/${filePath}`, {
-                    headers: {
-                        'X-Auth-Token': WORKER_API_KEY
-                    }
-                });
+                const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/${filePath}`); // Removed X-Auth-Token header
                 if (!response.ok) {
                     if (response.status === 404) {
                         return null; // File not found
@@ -169,8 +166,8 @@
                 const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/${filePath}`, {
                     method: 'PUT',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Auth-Token': WORKER_API_KEY
+                        'Content-Type': 'application/json'
+                        // Removed X-Auth-Token header
                     },
                     body: JSON.stringify(data)
                 });
