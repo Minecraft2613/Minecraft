@@ -1,0 +1,1 @@
+// Content is static in HTML, no JS needed for this part.
