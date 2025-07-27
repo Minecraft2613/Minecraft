@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "accountId": "mdl8ise0kvuvajl3mze",
+    "themeId": "default",
+    "displayName": "ansh",
+    "profilePictureUrl": "",
+    "notificationSettings": {
+      "email": true,
+      "sms": false
+    },
+    "privacySettings": {
+      "showBalance": true,
+      "showTransactions": true
+    }
+  }
+]
