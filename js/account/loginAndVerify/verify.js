@@ -1,24 +1,4 @@
-function getSimulatedKV() {
-    try {
-        const data = localStorage.getItem('cloudflare_kv_sim');
-        return JSON.parse(data) || {};
-    } catch (e) {
-        console.error("Error parsing simulated KV data from localStorage:", e);
-        localStorage.removeItem('cloudflare_kv_sim');
-        return {};
-    }
-}
-
-function putSimulatedKV(key, value) {
-    const kv = getSimulatedKV();
-    kv[key] = value;
-    localStorage.setItem('cloudflare_kv_sim', JSON.stringify(kv));
-    console.log(`Simulated KV: Put key "${key}".`);
-}
-
-function getSimulatedKVItem(key) {
-    const kv = getSimulatedKV();
-    const item = kv[key];
-    console.log(`Simulated KV: Get key "${key}" -`, item ? 'found' : 'not found');
-    return item;
-}
+// This file previously contained functions for simulating a KV store using localStorage.
+// With the transition to a GitHub JSON file backend, these functions are no longer used.
+// All account verification and login logic is now handled via API calls to the Cloudflare Worker
+// which interacts with the consolidated account.json file on GitHub.

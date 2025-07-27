@@ -1,21 +1,21 @@
-        function renderProfile() {
-            if (currentUser && userProfile) {
+function renderProfile() {
+            if (currentUser) {
                 document.getElementById('display-email').textContent = currentUser.email;
-                document.getElementById('display-minecraft-username').textContent = userProfile.minecraftUsername || 'N/A';
-                document.getElementById('display-minecraft-edition').textContent = (userProfile.minecraftEdition === 'java' ? 'Java Edition' : (userProfile.minecraftEdition === 'bedrock' ? 'Bedrock Edition' : 'N/A'));
-                document.getElementById('display-account-id').textContent = currentUser.uid || 'N/A';
-                document.getElementById('display-account-name').textContent = userProfile.accountName || 'N/A';
-                document.getElementById('minecraft-username').value = userProfile.minecraftUsername || '';
-                document.getElementById('account-name').value = userProfile.accountName || '';
-                updateAvatarDisplay(userProfile.avatar, currentUser.email);
+                document.getElementById('display-minecraft-username').textContent = currentUser.username || 'N/A'; // Use currentUser.username
+                // Removed minecraftEdition as it's not stored in the consolidated account
+                document.getElementById('display-account-id').textContent = currentUser.accountId || 'N/A'; // Use currentUser.accountId
+                document.getElementById('display-account-name').textContent = currentUser.bankId || 'N/A'; // Use currentUser.bankId
+                document.getElementById('minecraft-username').value = currentUser.username || ''; // Use currentUser.username
+                // Removed account-name input as bankId is not updated via this form
+                updateAvatarDisplay(currentUser.settings.profilePictureUrl, currentUser.email); // Use profilePictureUrl from settings
             }
         }
 
-        function updateAvatarDisplay(avatarDataUrl, email) {
+        function updateAvatarDisplay(profilePictureUrl, email) {
             const mainProfileImage = document.getElementById('profile-image');
             const mainProfileInitial = document.getElementById('profile-initial');
-            if (avatarDataUrl) {
-                mainProfileImage.src = avatarDataUrl;
+            if (profilePictureUrl) {
+                mainProfileImage.src = profilePictureUrl;
                 mainProfileImage.style.display = 'block';
                 mainProfileInitial.style.display = 'none';
             } else {
@@ -27,8 +27,8 @@
             const HEADER_PROFILE_IMAGE = document.getElementById('header-profile-image');
             const HEADER_PROFILE_INITIAL = document.getElementById('header-profile-initial');
             if (HEADER_PROFILE_IMAGE && HEADER_PROFILE_INITIAL) {
-                if (avatarDataUrl) {
-                    HEADER_PROFILE_IMAGE.src = avatarDataUrl;
+                if (profilePictureUrl) {
+                    HEADER_PROFILE_IMAGE.src = profilePictureUrl;
                     HEADER_PROFILE_IMAGE.style.display = 'block';
                     HEADER_PROFILE_INITIAL.style.display = 'none';
                 } else {
@@ -46,21 +46,22 @@
 
             PROFILE_FORM.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                if (!currentUser || !userProfile) {
+                if (!currentUser) {
                     showCustomMessage(PROFILE_MESSAGE_ELEM, 'Please log in first.', 'error');
                     return;
                 }
 
-                const updatedProfile = {
-                    minecraftUsername: document.getElementById('minecraft-username').value,
-                    accountName: document.getElementById('account-name').value,
-                    avatar: userProfile.avatar
+                const updatedSettingsPayload = {
+                    settings: {
+                        displayName: document.getElementById('minecraft-username').value,
+                        profilePictureUrl: currentUser.settings.profilePictureUrl // Keep existing if not changed by avatar upload
+                    }
                 };
 
-                const response = await simulatedCloudflareApi.updateProfile(currentUser.email, updatedProfile);
+                const response = await simulatedCloudflareApi.updateProfile(currentUser.accountId, updatedSettingsPayload);
 
                 if (response.success) {
-                    userProfile = response.user;
+                    currentUser = response.user; // Update currentUser with the latest data
                     renderProfile();
                     showCustomMessage(PROFILE_MESSAGE_ELEM, 'Profile saved successfully!', 'success');
                 } else {
@@ -70,17 +71,22 @@
 
             AVATAR_UPLOAD_INPUT.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
-                if (file && currentUser && userProfile) {
+                if (file && currentUser) {
                     const reader = new FileReader();
                     reader.onload = async (event) => {
                         const avatarDataUrl = event.target.result;
-                        const updatedProfile = { ...userProfile, avatar: avatarDataUrl };
+                        
+                        const updatedSettingsPayload = {
+                            settings: {
+                                profilePictureUrl: avatarDataUrl
+                            }
+                        };
 
-                        const response = await simulatedCloudflareApi.updateProfile(currentUser.email, updatedProfile);
+                        const response = await simulatedCloudflareApi.updateProfile(currentUser.accountId, updatedSettingsPayload);
 
                         if (response.success) {
-                            userProfile = response.user;
-                            updateAvatarDisplay(userProfile.avatar, currentUser.email);
+                            currentUser = response.user; // Update currentUser with the latest data
+                            updateAvatarDisplay(currentUser.settings.profilePictureUrl, currentUser.email);
                             showCustomMessage(PROFILE_MESSAGE_ELEM, 'Profile picture updated!', 'success');
                         } else {
                             showCustomMessage(PROFILE_MESSAGE_ELEM, response.message, 'error');
@@ -118,6 +124,7 @@
                     return;
                 }
 
+                // This call will currently warn that the functionality is not implemented in the worker.
                 const response = await simulatedCloudflareApi.changePassword(currentUser.email, currentPassword, newPassword);
 
                 if (response.success) {

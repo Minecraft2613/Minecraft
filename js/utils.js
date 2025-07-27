@@ -1,7 +1,5 @@
 // --- Global Configuration ---
         const CLOUDFLARE_WORKER_BASE_URL = 'https://minecraft1.1987sakshamsingh.workers.dev';
-        // WORKER_API_KEY is no longer used for authentication in this version
-        // const WORKER_API_KEY = 'd47b4af7-2b66-4e82-b9ac-1dce11b3872b';
 
         // --- Custom Message Box (Replaces alert()) ---
         const messageBoxOverlay = document.getElementById('message-box-overlay');
@@ -21,39 +19,6 @@
         window.alert = function(message) {
             showCustomAlert('Alert', message);
         };
-
-        // Helper to get the full simulated KV store
-        const CLOUDFLARE_KV_SIMULATION_KEY = 'cloudflare_kv_sim';
-
-        function getSimulatedKV() {
-            try {
-                const data = localStorage.getItem(CLOUDFLARE_KV_SIMULATION_KEY);
-                return JSON.parse(data) || {};
-            } catch (e) {
-                console.error("Error parsing simulated KV data from localStorage:", e);
-                localStorage.removeItem(CLOUDFLARE_KV_SIMULATION_KEY);
-                return {};
-            }
-        }
-
-        function putSimulatedKV(key, value) {
-            const kv = getSimulatedKV();
-            kv[key] = value;
-            localStorage.setItem(CLOUDFLARE_KV_SIMULATION_KEY, JSON.stringify(kv));
-            console.log(`Simulated KV: Put key "${key}".`);
-        }
-
-        function getSimulatedKVItem(key) {
-            const kv = getSimulatedKV();
-            const item = kv[key];
-            console.log(`Simulated KV: Get key "${key}" -`, item ? 'found' : 'not found');
-            return item;
-        }
-
-        // Simple UID generator (for demo purposes)
-        function generateUID(email) {
-            return 'user_' + btoa(email).replace(/=/g, '').substring(0, 10) + '_' + Date.now().toString().slice(-4);
-        }
 
         // --- Custom Message Display for small inline messages (not the full modal alert) ---
         function showCustomMessage(element, message, type) {
@@ -143,42 +108,3 @@
         }
 
         let isCreateMode = false;
-
-        // --- JSON File Read/Write Functions (via Cloudflare Worker) ---
-        async function readJsonFile(filePath) {
-            try {
-                const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/${filePath}`); // Removed X-Auth-Token header
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        return null; // File not found
-                    }
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return await response.json();
-            } catch (e) {
-                console.error(`Error reading ${filePath}:`, e);
-                return null;
-            }
-        }
-
-        async function writeJsonFile(filePath, data) {
-            try {
-                const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/${filePath}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                        // Removed X-Auth-Token header
-                    },
-                    body: JSON.stringify(data)
-                });
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Failed to write to ${filePath}: ${response.statusText} - ${errorText}`);
-                }
-                console.log(`Successfully wrote to ${filePath}`);
-                return true;
-            } catch (e) {
-                console.error(`Error writing ${filePath}:`, e);
-                return false;
-            }
-        }

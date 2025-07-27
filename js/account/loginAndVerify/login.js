@@ -91,22 +91,20 @@ const AUTH_SCREEN = document.getElementById('auth-screen');
                     const response = await simulatedCloudflareApi.register(email, password, minecraftUsername, accountName, minecraftEdition);
 
                     if (response.success) {
-                        currentUser = { email: response.email, uid: response.uid };
-                        userProfile = response.user;
-                        sessionStorage.setItem('current_auth_email', email);
-                        handleSuccessfulAuth();
-                        showCustomMessage(MAIN_AUTH_MESSAGE_ELEM, 'Account created successfully!', 'success');
+                        showCustomMessage(MAIN_AUTH_MESSAGE_ELEM, 'Account created successfully! Please log in.', 'success');
+                        setAuthMode(false); // Switch to login mode after successful registration
                     } else {
                         showCustomMessage(MAIN_AUTH_MESSAGE_ELEM, response.message, 'error');
                     }
 
                 } else {
-                    const response = await simulatedCloudflareApi.login(email, password);
+                    const response = await simulatedCloudflareApi.login(email, password); // Use email as identifier
 
                     if (response.success) {
-                        currentUser = { email: response.email, uid: response.uid };
-                        userProfile = response.user;
-                        sessionStorage.setItem('current_auth_email', email);
+                        currentUser = response.user; // Full account object
+                        userProfile = response.user; // Full account object
+                        sessionStorage.setItem('current_auth_email', currentUser.email);
+                        sessionStorage.setItem('current_auth_accountId', currentUser.accountId); // Store accountId
                         handleSuccessfulAuth();
                         showCustomMessage(MAIN_AUTH_MESSAGE_ELEM, 'Login successful!', 'success');
                     } else {

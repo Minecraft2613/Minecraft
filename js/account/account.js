@@ -2,22 +2,23 @@ let currentUser = null;
         let userProfile = null;
 
         const simulatedCloudflareApi = {
-            async login(email, password) {
+            async login(identifier, password) { // Changed email to identifier as per worker
                 try {
                     const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/account/login`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
-                            // Removed X-Auth-Token header
                         },
-                        body: JSON.stringify({ email, password })
+                        body: JSON.stringify({ identifier, password })
                     });
                     const data = await response.json();
-                    if (response.ok && data.success) {
-                        console.log('Simulated API Login Success for:', email);
-                        return { success: true, user: data.account.profile, email: data.account.email, uid: data.account.uid };
+                    if (response.ok && data.message === "Login successful") { // Check message for success
+                        console.log('Simulated API Login Success for:', identifier);
+                        currentUser = data.account; // Store the full account object
+                        userProfile = data.account; // userProfile can also be the full account
+                        return { success: true, user: data.account, email: data.account.email, uid: data.account.accountId };
                     } else {
-                        console.log('Simulated API Login Failed for:', email);
+                        console.log('Simulated API Login Failed for:', identifier);
                         return { success: false, message: data.message || 'Invalid credentials.' };
                     }
                 } catch (e) {
@@ -31,14 +32,13 @@ let currentUser = null;
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
-                            // Removed X-Auth-Token header
                         },
                         body: JSON.stringify({ email, password, minecraftUsername, accountName, minecraftEdition })
                     });
                     const data = await response.json();
-                    if (response.ok && data.success) {
+                    if (response.ok && data.message === "Account created successfully") { // Check message for success
                         console.log('Simulated API Register Success for:', email);
-                        return { success: true, user: data.user, email: data.email, uid: data.uid };
+                        return { success: true, accountId: data.accountId, message: data.message };
                     } else {
                         console.log('Simulated API Register Failed for:', email);
                         return { success: false, message: data.message || 'Registration failed.' };
@@ -48,22 +48,23 @@ let currentUser = null;
                     return { success: false, message: 'Network error or server issue.' };
                 }
             },
-            async updateProfile(email, newProfileData) {
+            async updateProfile(accountId, updatedSettings) { // Changed email to accountId, newProfileData to updatedSettings
                 try {
-                    const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/account/update-profile`, {
-                        method: 'PUT',
+                    const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/account/settings/update`, { // Changed endpoint
+                        method: 'POST', // Changed to POST as per worker
                         headers: {
                             'Content-Type': 'application/json'
-                            // Removed X-Auth-Token header
                         },
-                        body: JSON.stringify({ email, newProfileData })
+                        body: JSON.stringify({ accountId, updatedSettings }) // Send accountId and updatedSettings
                     });
                     const data = await response.json();
-                    if (response.ok && data.success) {
-                        console.log('Simulated API Update Profile Success for:', email);
-                        return { success: true, user: data.user };
+                    if (response.ok && data.message === "Settings updated successfully") { // Check message for success
+                        console.log('Simulated API Update Profile Success for:', accountId);
+                        currentUser = data.updatedAccount; // Update currentUser with the latest data
+                        userProfile = data.updatedAccount; // Update userProfile
+                        return { success: true, user: data.updatedAccount };
                     } else {
-                        console.log('Simulated API Update Profile Failed:', email);
+                        console.log('Simulated API Update Profile Failed:', accountId);
                         return { success: false, message: data.message || 'Profile update failed.' };
                     }
                 } catch (e) {
@@ -72,25 +73,27 @@ let currentUser = null;
                 }
             },
             async changePassword(email, currentPassword, newPassword) {
+                // This endpoint is not yet implemented in the worker with the new structure.
+                // It would need to fetch the account, update passwordHash, and save.
+                console.warn("Change password functionality not yet implemented in worker.");
+                return { success: false, message: "Functionality not implemented." };
+            },
+            async getAccountDetails(accountId) {
                 try {
-                    const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/account/change-password`, {
-                        method: 'PUT',
+                    const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/account/details?accountId=${accountId}`, {
+                        method: 'GET',
                         headers: {
                             'Content-Type': 'application/json'
-                            // Removed X-Auth-Token header
-                        },
-                        body: JSON.stringify({ email, currentPassword, newPassword })
+                        }
                     });
                     const data = await response.json();
-                    if (response.ok && data.success) {
-                        console.log('Simulated API Change Password Success for:', email);
-                        return { success: true, message: data.message };
+                    if (response.ok) {
+                        return { success: true, account: data };
                     } else {
-                        console.log('Simulated API Change Password Failed:', email);
-                        return { success: false, message: data.message || 'Password change failed.' };
+                        return { success: false, message: data.message || 'Failed to fetch account details.' };
                     }
                 } catch (e) {
-                    console.error('Change Password API call failed:', e);
+                    console.error('Get Account Details API call failed:', e);
                     return { success: false, message: 'Network error or server issue.' };
                 }
             }
@@ -100,39 +103,28 @@ let currentUser = null;
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-content-wrapper').style.display = 'block';
             console.log('Auth successful: showing main content.');
-            renderProfile();
-            renderPlugins(pluginsData);
-            showSection('server-info-content');
-            fetchServerStatus();
+            // renderProfile(); // This function will need to be updated to use currentUser.settings and currentUser.theme
+            // renderPlugins(pluginsData);
+            // showSection('server-info-content');
+            // fetchServerStatus();
         }
 
         async function logoutUser() {
             if (currentUser) {
-                try {
-                    const response = await fetch(`${CLOUDFLARE_WORKER_BASE_URL}/account/logout`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                            // Removed X-Auth-Token header
-                        },
-                        body: JSON.stringify({ email: currentUser.email })
-                    });
-                    if (!response.ok) {
-                        console.error('Logout API call failed:', await response.text());
-                    }
-                } catch (e) {
-                    console.error('Logout API call failed:', e);
-                }
+                // The worker does not have a /account/logout endpoint yet.
+                // If implemented, it would update lastLogout and logoutHistory in account.json
+                console.warn("Logout functionality not yet implemented in worker.");
             }
 
             currentUser = null;
             userProfile = null;
             sessionStorage.removeItem('current_auth_email');
+            sessionStorage.removeItem('current_auth_accountId'); // Also clear accountId
             console.log('User logged out. Clearing session.');
 
             document.getElementById('auth-screen').style.display = 'flex';
             document.getElementById('main-content-wrapper').style.display = 'none';
             showCustomMessage(document.getElementById('auth-message-main'), 'You have been logged out.', 'success');
-            setAuthMode(false);
-            toggleSidebar();
+            // setAuthMode(false);
+            // toggleSidebar();
         }
