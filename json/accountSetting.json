@@ -12,5 +12,19 @@
       "showBalance": true,
       "showTransactions": true
     }
+  },
+  {
+    "accountId": "mdl8svm6c93dxx9fz6",
+    "themeId": "default",
+    "displayName": "ansh",
+    "profilePictureUrl": "",
+    "notificationSettings": {
+      "email": true,
+      "sms": false
+    },
+    "privacySettings": {
+      "showBalance": true,
+      "showTransactions": true
+    }
   }
 ]
