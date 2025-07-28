@@ -1,3 +1,4 @@
+// --- Save Theme Logic ---
 function saveTheme() {
     const root = document.documentElement.style;
     const box = document.getElementById("boxColor").value;
@@ -10,8 +11,9 @@ function saveTheme() {
     const accentGreen = document.getElementById("accentGreenColor").value;
     const accentBlue = document.getElementById("accentBlueColor").value;
 
+
     localStorage.setItem("--box-color", box);
-    localStorage.setItem("saved-glow-color", glow);
+    localStorage.setItem("saved-glow-color", glow); /* Store the glow color separately */
     localStorage.setItem("--glow-speed", speed);
     localStorage.setItem("--glow-brightness", brightness);
     localStorage.setItem("--bg-theme", bg);
@@ -19,6 +21,7 @@ function saveTheme() {
     localStorage.setItem("--text-light", textLight);
     localStorage.setItem("--accent-green", accentGreen);
     localStorage.setItem("--accent-blue", accentBlue);
+
 
     root.setProperty("--box-color", box);
     root.setProperty("--glow-color", enableGlow ? glow : "transparent");
@@ -28,6 +31,7 @@ function saveTheme() {
     root.setProperty("--text-light", textLight);
     root.setProperty("--accent-green", accentGreen);
     root.setProperty("--accent-blue", accentBlue);
+
 
     showCustomMessage(document.getElementById('theme-settings-content').querySelector('h2'), "🎨 Theme saved!", "success");
 }
