@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', () => {
     const role = localStorage.getItem('role');
     if (role === 'police') {
@@ -18,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const username = e.target.username.value;
             const password = e.target.password.value;
 
-            const response = await fetch('/api/login', {
+            const response = await fetch('https://playerdetails.mk2899833.workers.dev/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
@@ -42,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData.entries());
 
-            const response = await fetch('/api/signup', {
+            const response = await fetch('https://playerdetails.mk2899833.workers.dev/api/signup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -65,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const message = e.target['chat-input'].value;
 
-            await fetch('/api/chat', {
+            await fetch('https://playerdetails.mk2899833.workers.dev/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, message })
@@ -85,7 +84,7 @@ async function loadPlayerData() {
     const username = localStorage.getItem('username');
     const role = localStorage.getItem('role');
 
-    const response = await fetch(`/api/data?username=${username}&role=${role}`);
+    const response = await fetch(`https://playerdetails.mk2899833.workers.dev/api/data?username=${username}&role=${role}`);
     const data = await response.json();
 
     const container = document.getElementById('player-data-container');
@@ -106,7 +105,8 @@ async function loadPlayerData() {
             notificationBell.addEventListener('click', () => {
                 let notificationContent = '';
                 for(const notification of data.notifications) {
-                    notificationContent += `${notification.type} from ${notification.username} at ${new Date(notification.timestamp).toLocaleString()}\n`;
+                    notificationContent += `${notification.type} from ${notification.username} at ${new Date(notification.timestamp).toLocaleString()}
+`;
                 }
                 alert(notificationContent);
             });
@@ -120,12 +120,28 @@ async function loadPlayerData() {
     }
 }
 
+async function loadChat() {
+    const response = await fetch('https://playerdetails.mk2899833.workers.dev/api/chat', { method: 'GET' });
+    const data = await response.json();
+
+    const container = document.getElementById('chat-messages');
+    container.innerHTML = '';
+
+    for (const message of data) {
+        const div = document.createElement('div');
+        div.textContent = `[${new Date(message.timestamp).toLocaleTimeString()}] ${message.username}: ${message.message}`; 
+        container.appendChild(div);
+    }
+
+    container.scrollTop = container.scrollHeight;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const raiseMisinfoBtn = document.getElementById('raise-misinfo-btn');
     if(raiseMisinfoBtn) {
         raiseMisinfoBtn.addEventListener('click', async () => {
             const username = localStorage.getItem('username');
-            await fetch('/api/misinformation', {
+            await fetch('https://playerdetails.mk2899833.workers.dev/api/misinformation', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username })
@@ -148,19 +164,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
-async function loadChat() {
-    const response = await fetch('/api/chat');
-    const data = await response.json();
-
-    const container = document.getElementById('chat-messages');
-    container.innerHTML = '';
-
-    for (const message of data) {
-        const div = document.createElement('div');
-        div.textContent = `[${new Date(message.timestamp).toLocaleTimeString()}] ${message.username}: ${message.message}`;
-        container.appendChild(div);
-    }
-
-    container.scrollTop = container.scrollHeight;
-}
