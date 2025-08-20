@@ -1,0 +1,25 @@
+
+{
+  "responses": {
+    "signupSuccess": {
+      "success": true,
+      "message": "Signup successful! Please log in."
+    },
+    "loginPolice": {
+      "success": true,
+      "role": "police"
+    },
+    "loginPlayer": {
+      "success": true,
+      "role": "player"
+    },
+    "loginFail": {
+      "success": false,
+      "message": "Invalid credentials"
+    },
+    "misinformation": {
+      "success": true,
+      "message": "Misinformation reported."
+    }
+  }
+}
