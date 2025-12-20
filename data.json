@@ -1,3 +1,16 @@
 {
-  "users": {}
+  "users": {
+    "ansh": {
+      "email": "ansh",
+      "password": "2613",
+      "uid": "user_mjegne5gtmx62kpoatq",
+      "profile": {
+        "minecraftUsername": "Ansh",
+        "minecraftEdition": "java",
+        "accountId": "user_mjegne5gtmx62kpoatq",
+        "accountName": "Ansh",
+        "avatar": ""
+      }
+    }
+  }
 }
