@@ -1,8 +1,32 @@
 /* 
     Configuration 
-    REPLACE THIS WITH YOUR DEPLOYED CLOUDFLARE WORKER URL
 */
-const API_URL = 'YOUR_WORKER_URL_HERE'; // e.g., https://my-worker.subdomain.workers.dev
+const API_URL = 'https://minecraft2613.mk2899833.workers.dev';
+
+// --- Console & Source Protection ---
+// Prevents easy viewing of real code in the browser
+(function() {
+    // Disable Right-Click
+    document.addEventListener('contextmenu', e => e.preventDefault());
+
+    // Disable common shortcuts for DevTools (F12, Ctrl+Shift+I, etc.)
+    document.addEventListener('keydown', e => {
+        if (
+            e.keyCode === 123 || // F12
+            (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || // Ctrl+Shift+I/J
+            (e.ctrlKey && e.keyCode === 85) // Ctrl+U (View Source)
+        ) {
+            e.preventDefault();
+        }
+    });
+
+    // Clear and override console to hide potential leaks
+    setInterval(() => {
+        console.clear();
+        console.log("%cSTOP!", "color: red; font-family: sans-serif; font-size: 4em; font-weight: bolder; text-shadow: #000 1px 1px;");
+        console.log("%cThis area is for authorized developers only.", "font-size: 1.5em;");
+    }, 1000);
+})();
 
 // --- Custom Message Box (Replaces alert()) ---
 const messageBoxOverlay = document.getElementById('message-box-overlay');
