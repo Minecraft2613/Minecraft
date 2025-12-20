@@ -5,7 +5,7 @@ const API_URL = 'https://minecraft2613.mk2899833.workers.dev';
 
 // --- Console & Source Protection ---
 // Prevents easy viewing of real code in the browser
-(function() {
+(function () {
     // Disable Right-Click
     document.addEventListener('contextmenu', e => e.preventDefault());
 
@@ -46,7 +46,7 @@ function showCustomAlert(title, message, duration = 3000) { // Default 3 seconds
 
 // Intercept standard alert calls to use custom box (for development/testing)
 const originalAlert = window.alert;
-window.alert = function(message) {
+window.alert = function (message) {
     showCustomAlert('Alert', message);
 };
 
@@ -108,7 +108,7 @@ const cloudflareApi = {
             });
             return await res.json();
         } catch (e) {
-             return { success: false, message: 'Network error.' };
+            return { success: false, message: 'Network error.' };
         }
     }
 };
@@ -253,7 +253,7 @@ MAIN_AUTH_SUBMIT_BTN.addEventListener('click', async (e) => {
         if (response.success) {
             currentUser = { email: response.email, uid: response.uid };
             userProfile = response.user;
-            sessionStorage.setItem('current_auth_email', JSON.stringify({email, password})); // Insecure but matches original logic structure for re-login (demo)
+            sessionStorage.setItem('current_auth_email', JSON.stringify({ email, password })); // Insecure but matches original logic structure for re-login (demo)
             handleSuccessfulAuth();
             showCustomMessage(MAIN_AUTH_MESSAGE_ELEM, 'Account created successfully!', 'success');
         } else {
@@ -267,7 +267,7 @@ MAIN_AUTH_SUBMIT_BTN.addEventListener('click', async (e) => {
         if (response.success) {
             currentUser = { email: response.email, uid: response.uid };
             userProfile = response.user;
-            sessionStorage.setItem('current_auth_email', JSON.stringify({email, password})); // Insecure storage of creds
+            sessionStorage.setItem('current_auth_email', JSON.stringify({ email, password })); // Insecure storage of creds
             handleSuccessfulAuth();
             showCustomMessage(MAIN_AUTH_MESSAGE_ELEM, 'Login successful!', 'success');
         } else {
@@ -399,7 +399,7 @@ if (HEADER_PROFILE_AVATAR) {
     });
 }
 function toggleProfileDropdown() {
-     PROFILE_DROPDOWN_MENU.classList.toggle('active');
+    PROFILE_DROPDOWN_MENU.classList.toggle('active');
 }
 
 // Handle Change Password Form
@@ -442,7 +442,7 @@ function logoutUser() {
     currentUser = null;
     userProfile = null;
     sessionStorage.removeItem('current_auth_email'); // Clear auth session
-    
+
     AUTH_SCREEN.style.display = 'flex'; // Show auth screen
     document.getElementById('main-content-wrapper').style.display = 'none'; // Hide main content
     showCustomMessage(MAIN_AUTH_MESSAGE_ELEM, 'You have been logged out.', 'success');
@@ -532,21 +532,27 @@ async function fetchServerStatus() {
         const data = await res.json();
 
         if (!data || typeof data.online === "undefined") {
-            statusDiv.innerHTML = "⚠️ Error checking server status.";
-            statusDiv.className = "status-offline";
-            playersDiv.innerHTML = "";
-            onlinePlayersList.innerHTML = '<li>Error: Could not retrieve server status.</li>';
-            serverControlOptions.innerHTML = `<a href="https://freemcserver.net/server/1524209" target="_blank"><button style="background-color: var(--button-primary);"><i class="fas fa-play"></i> Start Server</button></a>`;
-            return;
+            throw new Error("Invalid data");
         }
 
-        if (!data.online) {
+        // Check for "expired" in MOTD (clean or raw)
+        const motdClean = (data.motd && data.motd.clean) ? data.motd.clean.join(" ").toLowerCase() : "";
+        const isExpired = motdClean.includes("expired");
+
+        if (isExpired) {
+            statusDiv.innerHTML = "🔴 Expired";
+            statusDiv.className = "status-expired"; // Ensure this class is styled (orange/red)
+            playersDiv.innerHTML = "Server is expired";
+            onlinePlayersList.innerHTML = '<li>Server is expired. Please renew.</li>';
+            serverControlOptions.innerHTML = `<a href="https://freemcserver.net/server/1524209/renew" target="_blank"><button style="background-color: var(--button-red);"><i class="fas fa-sync-alt"></i> Renew Server</button></a>`;
+        } else if (!data.online) {
             statusDiv.innerHTML = "🔴 Offline";
             statusDiv.className = "status-offline";
-            playersDiv.innerHTML = "";
-            onlinePlayersList.innerHTML = '<li>Server is offline. Invalid player names (server does not exist to provide names).</li>';
+            playersDiv.innerHTML = "0/0 Players";
+            onlinePlayersList.innerHTML = '<li>Server is offline.</li>';
             serverControlOptions.innerHTML = `<a href="https://freemcserver.net/server/1524209" target="_blank"><button style="background-color: var(--button-primary);"><i class="fas fa-play"></i> Start Server</button></a>`;
         } else {
+            // Online and NOT expired
             statusDiv.innerHTML = "🟢 Online";
             statusDiv.className = "status-online";
             playersDiv.innerHTML = `👥 ${data.players.online}/${data.players.max} Players`;
@@ -562,10 +568,10 @@ async function fetchServerStatus() {
             onlinePlayersList.innerHTML = playersListHtml;
         }
     } catch (error) {
-        statusDiv.innerHTML = "⚠️ Network Error: Cannot reach API.";
+        statusDiv.innerHTML = "🔴 Offline"; // Treat network error as offline
         statusDiv.className = "status-offline";
-        playersDiv.innerHTML = "";
-        onlinePlayersList.innerHTML = '<li>Network error. Please check your connection.</li>';
+        playersDiv.innerHTML = "0/0 Players";
+        onlinePlayersList.innerHTML = '<li>Server is offline (or unreachable).</li>';
         serverControlOptions.innerHTML = `<a href="https://freemcserver.net/server/1524209" target="_blank"><button style="background-color: var(--button-primary);"><i class="fas fa-play"></i> Start Server</button></a>`;
     }
 }
@@ -585,16 +591,29 @@ function copyToClipboard(id) {
 
 // --- Plugin Data & Render Logic ---
 const pluginsData = [
-    { name: "EssentialsX", description: "Core plugin for server management, homes, warps, kits, and more.", videoLink: "https://www.youtube.com/embed/dQw4w9WgXcQ", detailsLink: "https://essentialsx.net/wiki.html", status: "working" },
-    { name: "LuckPerms", description: "Powerful permissions plugin with a web editor.", videoLink: "", detailsLink: "https://luckperms.net/", status: "working" },
+    { name: "EssentialsX", description: "Core plugin for server management, homes, warps, kits, and more.", videoLink: "https://www.youtube.com/embed/5Yk0sKp7m2Y", detailsLink: "https://essentialsx.net/wiki.html", status: "working" },
+    { name: "LuckPerms", description: "Powerful permissions plugin with a web editor.", videoLink: "https://www.youtube.com/embed/7pQ5YkZ5m0A", detailsLink: "https://luckperms.net/", status: "working" },
     { name: "WorldEdit", description: "Fast and easy to use in-game world editor.", videoLink: "https://www.youtube.com/embed/aYd2I9B5G60", detailsLink: "https://enginehub.org/worldedit/", status: "working" },
-    { name: "GriefPrevention", description: "Prevents griefing and protects player builds with land claims.", videoLink: "https://www.youtube.com/embed/p_G-o2r9D2s", detailsLink: "https://www.spigotmc.org/resources/griefprevention.1884/", status: "working" },
-    { name: "PlaceholderAPI", description: "Adds placeholders to plugins, allowing dynamic text display.", videoLink: "", detailsLink: "https://www.spigotmc.org/resources/placeholderapi.6245/", status: "working" },
     { name: "Vault", description: "A permissions, chat, & economy API to allow plugins to hook into.", videoLink: "https://www.youtube.com/embed/lIeXvD3xG4w", detailsLink: "https://www.spigotmc.org/resources/vault.34315/", status: "working" },
-    { name: "EconomyTaxerWeb", description: "This custom plugin is not made by CraftOne. Unsupported version by Ansh_2613 and i._Sakshamm.", videoLink: "", detailsLink: "", status: "non-working", problem: "This custom plugin is not made by CraftOne. Unsupported version by Ansh_2613 and i._Sakshamm." }, // Updated problem
-    { name: "Movecraft", description: "Allows players to build and pilot custom ships and vehicles.", videoLink: "https://www.youtube.com/embed/some_movecraft_video", detailsLink: "https://www.spigotmc.org/resources/movecraft.20364/", status: "non-working", problem: "Unsupported version." } // Updated problem
-    // Add more plugins here with their status
+    { name: "SkinsRestorer", description: "Ability to restore or change player skins on offline and online mode servers.", videoLink: "https://www.youtube.com/embed/3JZ_D3ELwOQ", detailsLink: "https://modrinth.com/plugin/skinsrestorer", status: "working" },
+    { name: "ViaVersion", description: "Allows newer Minecraft clients to connect to older servers.", videoLink: "https://www.youtube.com/embed/0pK7p6Y4QGg", detailsLink: "https://modrinth.com/plugin/viaversion", status: "working" },
+    { name: "ViaBackwards", description: "Allows older clients to connect to newer server versions.", videoLink: "https://www.youtube.com/embed/Xj5Z6Gm0wJY", detailsLink: "https://modrinth.com/plugin/viabackwards", status: "working" },
+    { name: "ViaRewind", description: "Addon for ViaBackwards to support very old client versions.", videoLink: "https://www.youtube.com/embed/0u9z6Y2nQkE", detailsLink: "https://modrinth.com/plugin/viarewind", status: "working" },
+    { name: "CoreProtect", description: "Fast and efficient data logging and anti-griefing plugin.", videoLink: "https://www.youtube.com/embed/7K3rG5Y9m1U", detailsLink: "https://modrinth.com/plugin/coreprotect", status: "working" },
+    { name: "WorldEdit", description: "In-game map editor with schematics, brushes, and copy-paste.", videoLink: "https://www.youtube.com/embed/aYd2I9B5G60", detailsLink: "https://modrinth.com/plugin/worldedit", status: "working" },
+    { name: "PicoJobs", description: "Customizable jobs plugin allowing players to earn money.", videoLink: "https://www.youtube.com/embed/WP9s6GZ4y7A", detailsLink: "https://modrinth.com/plugin/picojobs", status: "working" },
+    { name: "GSit", description: "Allows players to sit, lay, and relax on blocks.", videoLink: "https://www.youtube.com/embed/9VxE7JQmF1M", detailsLink: "https://www.spigotmc.org/resources/gsit.62325/", status: "working" },
+    { name: "EconomyShopGUI", description: "Simple GUI-based shop plugin for economy servers.", videoLink: "https://www.youtube.com/embed/fQpJ6mZQZ3Y", detailsLink: "https://www.spigotmc.org/resources/economyshopgui.69927/", status: "working" },
+    { name: "sleepmost", description: "Controls percentage of players required to sleep to skip night.", videoLink: "https://www.youtube.com/embed/2zX7R1ZyKkQ", detailsLink: "https://www.spigotmc.org/resources/sleep-most.60623/", status: "working" },
+    { name: "BeastLib", description: "Dependency library for Beast plugins like BeastWithdraw and BeastTokens.", videoLink: "https://www.youtube.com/embed/1n0mJ7ZpYkU", detailsLink: "https://modrinth.com/plugin/beastlib", status: "working" },
+    { name: "ChestLocker", description: "Lightweight plugin to lock chests and containers.", videoLink: "https://www.youtube.com/embed/Vk6KZ7XJw4Q", detailsLink: "https://www.spigotmc.org/resources/chestlocker.108203/", status: "working" },
+    { name: "GeyserSpigot", description: "Allows Bedrock Edition players to join Java Edition servers.", videoLink: "https://www.youtube.com/embed/0s3Z8Qp8JmE", detailsLink: "https://modrinth.com/plugin/geyser", status: "working" },
+    { name: "floodgate", description: "Allows Bedrock players to join online-mode Java servers via Geyser.", videoLink: "https://www.youtube.com/embed/6Lr2p9X5Q0Y", detailsLink: "https://github.com/GeyserMC/Floodgate", status: "working" },
+    { name: "NSR-AI", description: "Custom AI-based plugin installed manually.", videoLink: "", detailsLink: "", status: "working" },
+    { name: "EconomyTaxerWeb", description: "Custom plugin not officially supported.", videoLink: "", detailsLink: "", status: "non-working", problem: "This custom plugin is not made by CraftOne. Unsupported version by Ansh_2613 and i._Sakshamm." },
+    { name: "Movecraft", description: "Allows players to build and pilot custom ships and vehicles.", videoLink: "https://www.youtube.com/embed/8C7KZpK6Z3U", detailsLink: "https://www.spigotmc.org/resources/movecraft.20364/", status: "non-working", problem: "Unsupported version." }
 ];
+
 
 const pluginSubNavButtons = document.querySelectorAll('#plugins-content .player-sub-nav button');
 let currentPluginFilter = "all-plugins"; // Default filter
@@ -606,10 +625,10 @@ function renderPlugins(pluginsToRender) {
     let filteredPlugins = pluginsToRender;
 
     if (currentPluginFilter === "non-working-plugins") {
-        filteredPlugins = pluginsToRender.filter(p => p.status === "non-working").sort((a,b) => a.name.localeCompare(b.name));
+        filteredPlugins = pluginsToRender.filter(p => p.status === "non-working").sort((a, b) => a.name.localeCompare(b.name));
     } else { // "all-plugins" - sort working first, then non-working
-        const workingPlugins = pluginsToRender.filter(p => p.status === "working").sort((a,b) => a.name.localeCompare(b.name));
-        const nonWorkingPlugins = pluginsToRender.filter(p => p.status === "non-working").sort((a,b) => a.name.localeCompare(b.name));
+        const workingPlugins = pluginsToRender.filter(p => p.status === "working").sort((a, b) => a.name.localeCompare(b.name));
+        const nonWorkingPlugins = pluginsToRender.filter(p => p.status === "non-working").sort((a, b) => a.name.localeCompare(b.name));
         filteredPlugins = [...workingPlugins, ...nonWorkingPlugins];
     }
 
@@ -767,7 +786,7 @@ playerSubNavButtons.forEach(button => {
 });
 
 // Player search functionality
-allPlayersSearch.addEventListener('input', function() {
+allPlayersSearch.addEventListener('input', function () {
     const filter = this.value.toLowerCase();
     const filteredPlayers = allPlayersData.filter(player =>
         player.name.toLowerCase().includes(filter)
@@ -807,20 +826,20 @@ ${message}`;
         },
         body: JSON.stringify({ content: fullMessage })
     })
-    .then(res => {
-        if (res.ok) {
-            contactUsStatus.innerText = "✅ Message sent successfully! We\'ll get back to you soon.";
-            contactUsStatus.classList.remove('error');
-            contactUsForm.reset();
-        } else {
-            contactUsStatus.innerText = "❌ Failed to send. Try again later.";
+        .then(res => {
+            if (res.ok) {
+                contactUsStatus.innerText = "✅ Message sent successfully! We\'ll get back to you soon.";
+                contactUsStatus.classList.remove('error');
+                contactUsForm.reset();
+            } else {
+                contactUsStatus.innerText = "❌ Failed to send. Try again later.";
+                contactUsStatus.classList.add('error');
+            }
+        })
+        .catch(error => {
+            contactUsStatus.innerText = "❌ Error sending message.";
             contactUsStatus.classList.add('error');
-        }
-    })
-    .catch(error => {
-        contactUsStatus.innerText = "❌ Error sending message.";
-        contactUsStatus.classList.add('error');
-    });
+        });
 });
 
 
@@ -942,10 +961,10 @@ function showCustomMessage(element, message, type) {
         if (element.tagName === 'H2' || element.tagName === 'P') {
             msgElement = element;
         } else {
-             // Fallback, append to body or a general area if specific parent not found
+            // Fallback, append to body or a general area if specific parent not found
             msgElement = document.querySelector('#dynamic-content-area') || document.body;
             const existingTempMsg = msgElement.querySelector('.custom-message.temp');
-            if(existingTempMsg) existingTempMsg.remove();
+            if (existingTempMsg) existingTempMsg.remove();
             const newTempMsg = document.createElement('p');
             newTempMsg.classList.add('custom-message', 'temp');
             msgElement.appendChild(newTempMsg);
@@ -991,7 +1010,7 @@ window.addEventListener("DOMContentLoaded", () => {
                     mainContentWrapper.style.display = "none";
                 }
             });
-        } catch(e) {
+        } catch (e) {
             sessionStorage.removeItem('current_auth_email');
             setAuthMode(false);
             authScreen.style.display = "flex";
