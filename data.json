@@ -23,6 +23,18 @@
         "accountName": "Khi",
         "avatar": ""
       }
+    },
+    "aa@q": {
+      "email": "aa@q",
+      "password": "q",
+      "uid": "user_mlnczldscl0z044bkt",
+      "profile": {
+        "minecraftUsername": "q",
+        "minecraftEdition": "java",
+        "accountId": "user_mlnczldscl0z044bkt",
+        "accountName": "q",
+        "avatar": ""
+      }
     }
   }
 }
